@@ -1,0 +1,25 @@
+model Hub {
+  id                   String     @id @default(uuid())
+  name                 String     @db.VarChar(150)
+  code                 String     @unique @db.VarChar(20) // e.g. 
+  address              String     @db.Text
+  zone                 String     @db.VarChar(100)        // e.g. 
+  contactNo            String     @db.VarChar(20)
+  latitude             Float?
+  longitude            Float?
+
+
+  deletedAt            DateTime?
+
+  createdAt            DateTime   @default(now())
+  updatedAt            DateTime   @updatedAt
+
+originShipments      Shipment[] @relation("OriginHubShipments")
+  destinationShipments Shipment[] @relation("DestinationHubShipments")
+
+  couriers            CourierProfile[]
+
+  @@index([code, zone])
+  @@index([deletedAt])
+  @@map("hubs")
+}

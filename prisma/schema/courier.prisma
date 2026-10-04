@@ -1,0 +1,27 @@
+// prisma/schema/courier.prisma
+model CourierProfile {
+  id                String       @id @default(uuid())
+  userId            String       @unique
+  user              User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  hubId             String?
+  hub               Hub?         @relation(fields: [hubId], references: [id], onDelete: SetNull)
+
+  vehicleType       VehicleType  @default(MOTORBIKE)
+  vehicleNumber     String       @db.VarChar(50)
+  drivingLicense    String?      @db.VarChar(100) 
+
+
+  drivingLicenseUrl String?      @db.VarChar(500) 
+  nidCardUrl        String?      @db.VarChar(500) 
+  currentZone       String       @db.VarChar(100)
+  isAvailable       Boolean      @default(true)
+  maxCapacityKg     Float        @default(30.0)
+  activeDeliveries  Int          @default(0)
+
+  createdAt         DateTime     @default(now())
+  updatedAt         DateTime     @updatedAt
+
+  @@index([hubId, isAvailable])
+  @@map("courier_profiles")
+}

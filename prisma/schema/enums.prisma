@@ -1,0 +1,54 @@
+enum Role {
+  CUSTOMER
+  COURIER
+  ADMIN
+}
+
+enum AuthProvider {
+  GOOGLE 
+  CREDENTIAL
+}
+
+
+enum UserStatus {
+  PENDING
+  ACTIVE
+  BLOCKED
+  DELETED
+}
+
+
+enum ShipmentStatus {
+  ORDER_PLACED         
+  PAYMENT_PENDING     
+  PAID                
+  PICKUP_ASSIGNED      
+  PICKED_UP            
+  IN_HUB_TRANSIT       
+  OUT_FOR_DELIVERY     
+  DELIVERED            
+  FAILED_DELIVERY      
+  CANCELLED          
+  RETURNED_TO_SENDER 
+}
+
+
+enum PaymentStatus {
+  PENDING      
+  SUCCESS      
+  FAILED       
+  CANCELLED    
+}
+
+enum PaymentGateway {
+  STRIPE
+  BKASH
+  SSLCOMMERZ
+}
+
+enum VehicleType {
+  BICYCLE   
+  MOTORBIKE
+  VAN
+  TRUCK
+}

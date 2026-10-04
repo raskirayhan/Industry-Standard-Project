@@ -1,0 +1,22 @@
+model Customer {
+  id             String    @id @default(uuid())
+  name       String    @db.VarChar(100)
+  email      String    @unique @db.VarChar(255)
+  userId         String    @unique
+  user           User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  defaultAddress String?   @db.Text
+  city           String?   @db.VarChar(100)
+  district       String?   @db.VarChar(100)
+  postalCode     String?   @db.VarChar(20)
+  alternatePhone String?   @db.VarChar(20)
+  totalOrders    Int       @default(0)
+  deletedAt      DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  shipments      Shipment[]
+
+  @@index([userId])
+  @@index([deletedAt])
+  @@map("customers")
+}

@@ -1,0 +1,68 @@
+model Shipment {
+  id                 String         @id @default(uuid())
+  trackingNumber     String         @unique @db.VarChar(50) // e.g. "TRK-2026-A1B2C3"
+
+  
+  customerId         String
+  customer           Customer       @relation(fields: [customerId], references: [id], onDelete: Restrict)
+
+
+  senderName         String         @db.VarChar(100)
+  senderPhone        String         @db.VarChar(20)
+  senderAddress      String         @db.Text
+
+
+  receiverName       String         @db.VarChar(100)
+  receiverPhone      String         @db.VarChar(20)
+  receiverAddress    String         @db.Text
+
+ 
+  originHubId        String
+  originHub          Hub            @relation("OriginHubShipments", fields: [originHubId], references: [id], onDelete: Restrict)
+  destinationHubId   String
+  destinationHub     Hub            @relation("DestinationHubShipments", fields: [destinationHubId], references: [id], onDelete: Restrict)
+
+  
+  courierId          String?
+  courier            User?          @relation(fields: [courierId], references: [id], onDelete: SetNull)
+
+ 
+  weightKg           Float
+  lengthCm           Float
+  widthCm            Float
+  heightCm           Float
+  chargeableWeightKg Float
+
+ 
+  baseFare           Float          @db.DoublePrecision
+  surcharge          Float          @default(0.0) @db.DoublePrecision
+  totalCost          Float          @db.DoublePrecision
+
+ 
+  status             ShipmentStatus @default(ORDER_PLACED)
+  deliveryOtp        String?        @db.VarChar(10)
+  deliveryNotes      String?        @db.Text
+
+  
+  podSignatureUrl    String?        @db.VarChar(500)
+  podImageUrl        String?        @db.VarChar(500)
+
+  
+  version            Int            @default(1)
+  deletedAt          DateTime?
+
+  createdAt          DateTime       @default(now())
+  updatedAt          DateTime       @updatedAt
+
+
+  statusLogs         ShipmentLog[]
+
+  payments           Payment[]
+
+  @@index([trackingNumber])
+  @@index([customerId, status])
+  @@index([courierId, status])
+  @@index([originHubId, destinationHubId])
+  @@index([deletedAt])
+  @@map("shipments")
+}

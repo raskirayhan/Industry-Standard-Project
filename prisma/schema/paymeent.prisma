@@ -1,0 +1,26 @@
+model Payment {
+  id                String         @id @default(uuid())
+  transactionId     String?        @unique @db.VarChar(100) 
+  shipmentId        String
+  shipment          Shipment       @relation(fields: [shipmentId], references: [id], onDelete: Restrict)
+  userId            String
+  user              User           @relation(fields: [userId], references: [id], onDelete: Restrict)
+
+  amount            Float          @db.DoublePrecision
+  currency          String         @default("BDT") @db.VarChar(10)
+  gateway           PaymentGateway @default(STRIPE)
+  status            PaymentStatus  @default(PENDING)
+
+  gatewaySessionId  String?        @db.VarChar(255) // Stripe Checkout Session ID
+  gatewayResponse   Json?         
+
+  deletedAt         DateTime?
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+
+  @@index([transactionId])
+  @@index([shipmentId, status])
+  @@index([userId])
+  @@index([deletedAt])
+  @@map("payments")
+}
