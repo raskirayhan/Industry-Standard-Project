@@ -2769,11 +2769,6 @@ app.use("/api/v1/courier", courierRoutes);
 app.use(notFound);
 app.use(globalErrorHandler);
 var app_default = app;
-
-// api/index.ts
-function handler(req, res) {
-  return app_default(req, res);
-}
 export {
-  handler as default
+  app_default as default
 };
