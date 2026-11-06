@@ -43,7 +43,6 @@ const loginUser = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
-
 const refreshToken = catchAsync(async (req: Request, res: Response) => {
   const token = req.cookies?.refreshToken || req.body?.refreshToken;
 
@@ -98,33 +97,31 @@ const googleLogin = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const forgotPassword = catchAsync(async (req: Request, res: Response) => {
+  const payload = req.body;
 
-const forgotPassword = async(req:Request, res:Response)=>{
-  const payload = req.body
+  await authService.forgotPassword(payload);
 
-  await authService.forgotPassword(payload)
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: `OTP sent to email: ${payload.email}`,
+    data: null,
+  });
+});
 
-  sendResponse(res,{
-    statusCode : httpStatus.OK,
-    success:true,
-    message : `OTP Send Tp Email : ${payload.email}`,
-    data : null
-  })
-}
-const resetPassword = async(req:Request, res:Response)=>{
-  const payload = req.body
+const resetPassword = catchAsync(async (req: Request, res: Response) => {
+  const payload = req.body;
 
-  await authService.forgotPassword(payload)
+  await authService.resetPassword(payload);
 
-  sendResponse(res,{
-    statusCode : httpStatus.OK,
-    success:true,
-    message : "Password Changed Successfully",
-    data : null
-  })
-}
-
-
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Password changed successfully",
+    data: null,
+  });
+});
 
 export const authController = {
   registerUser,
@@ -132,5 +129,5 @@ export const authController = {
   refreshToken,
   googleLogin,
   forgotPassword,
-  resetPassword
+  resetPassword,
 };
