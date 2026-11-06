@@ -43,7 +43,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
 // Root route check
-app.get("/", (req: Request, res: Response) => {
+app.get(["/", "/api", "/api/v1"], (req: Request, res: Response) => {
   res.status(httpStatus.OK).json({
     success: true,
     message: "Courier & Logistics Platform Backend API",

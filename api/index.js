@@ -2745,7 +2745,7 @@ app.post(
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
-app.get("/", (req, res) => {
+app.get(["/", "/api", "/api/v1"], (req, res) => {
   res.status(httpStatus12.OK).json({
     success: true,
     message: "Courier & Logistics Platform Backend API"
