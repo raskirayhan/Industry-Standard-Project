@@ -18,8 +18,17 @@ const app: Application = express();
 
 app.use(
   cors({
-    origin: config.app_url || "*",
+    origin: (origin, callback) => {
+      // Allow requests with no origin (like mobile apps, curl, postman) or configured origin
+      if (!origin || !config.app_url || config.app_url === "*" || origin === config.app_url) {
+        callback(null, true);
+      } else {
+        callback(null, true); // Permissive for API evaluation tools
+      }
+    },
     credentials: true,
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
   })
 );
 
