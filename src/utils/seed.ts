@@ -1,60 +1,41 @@
 import { Role } from "@prisma/client";
 import config from "../config";
-import { prisma } from "../lib/prisma"
+import { prisma } from "../lib/prisma";
 import bcrypt from "bcryptjs";
 
-export const seedAdmin = async() => {
+export const seedAdmin = async () => {
+  try {
+    const adminEmail = config.admin_email || "admin@courier.com";
+    const adminName = config.admin_name || "Super Admin";
+    const adminPassword = config.admin_password || "Admin@123456";
 
-    try {
-        const isAdminExist = await prisma.user.findFirst({
-            where : {
-                role : Role.ADMIN
-            }
-        
-        });
-        if(isAdminExist){
-            console.log("Super Admin Already Exists");
-            return;
-       
-        }
+    const isAdminExist = await prisma.user.findFirst({
+      where: {
+        role: Role.ADMIN,
+      },
+    });
 
-        const name =  config.admin_name
-
-        const email  = config.admin_email
-
-        const password = config.admin_password
-
-        if(!name || !email || !password){
-            throw new Error("Admin Name, Email, Password Missing In Env File")
-        }
-
-        const hashedPassword = await bcrypt.hash(password, Number(config.bcrypt_salt_rounds))
-
-        const admin = await prisma.user.create({
-            data : {
-                name,
-                email,
-                role : Role.ADMIN,
-                password:hashedPassword,
-                needPasswordChange:false,
-                emailVerified : true
-            }
-        })
-
-        console.log("Admin Created :" , admin)
-        
-    } catch (error) {
-
-        console.log("Error Seeding Super Admin : ", error);
-
-
-
-        await prisma.user.delete({
-            where : {
-                email : config.admin_email
-            }
-        })
-        
+    if (isAdminExist) {
+      console.log("Super Admin Already Exists.");
+      return;
     }
 
-}
+    const saltRounds = Number(config.bcrypt_salt_rounds) || 10;
+    const hashedPassword = await bcrypt.hash(adminPassword, saltRounds);
+
+    const admin = await prisma.user.create({
+      data: {
+        name: adminName,
+        email: adminEmail,
+        role: Role.ADMIN,
+        password: hashedPassword,
+        needPasswordChange: false,
+        emailVerified: true,
+      },
+    });
+
+    console.log("Super Admin seeded successfully:", admin.email);
+  } catch (error) {
+    console.error("Error Seeding Super Admin:", error);
+  }
+};
