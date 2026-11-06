@@ -1,0 +1,449 @@
+{
+  "info": {
+    "name": "Courier & Logistics Platform Backend API",
+    "_postman_id": "b7a6-courier-logistics-api",
+    "description": "Comprehensive Postman collection for Courier & Logistics Platform API covering all 3 roles (Customer, Courier, Admin), authentication, CRUD, pricing calculation, delivery workflow, Stripe payment, and validation error demonstrations.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:5000/api/v1",
+      "type": "string"
+    },
+    {
+      "key": "accessToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "adminAccessToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "courierAccessToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "shipmentId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "hubId",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "1. Authentication",
+      "item": [
+        {
+          "name": "Register Customer",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"John Doe\",\n  \"email\": \"customer@example.com\",\n  \"password\": \"Customer@123!\",\n  \"phone\": \"01711000001\",\n  \"defaultAddress\": \"House 12, Road 5, Dhanmondi\",\n  \"city\": \"Dhaka\",\n  \"district\": \"Dhaka\",\n  \"postalCode\": \"1209\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/auth/register", "host": ["{{baseUrl}}"], "path": ["auth", "register"] }
+          }
+        },
+        {
+          "name": "Login - Customer",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const json = pm.response.json();",
+                  "if (json.data && json.data.accessToken) {",
+                  "    pm.collectionVariables.set('accessToken', json.data.accessToken);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"customer@example.com\",\n  \"password\": \"Customer@123!\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/auth/login", "host": ["{{baseUrl}}"], "path": ["auth", "login"] }
+          }
+        },
+        {
+          "name": "Login - Admin (Evaluation Credentials)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const json = pm.response.json();",
+                  "if (json.data && json.data.accessToken) {",
+                  "    pm.collectionVariables.set('adminAccessToken', json.data.accessToken);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@courier.com\",\n  \"password\": \"Admin@123456\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/auth/login", "host": ["{{baseUrl}}"], "path": ["auth", "login"] }
+          }
+        },
+        {
+          "name": "Refresh Access Token",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refreshToken\": \"your_refresh_token_here\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/auth/refresh-token", "host": ["{{baseUrl}}"], "path": ["auth", "refresh-token"] }
+          }
+        },
+        {
+          "name": "Forgot Password - Request OTP",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"customer@example.com\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/auth/forgot-password", "host": ["{{baseUrl}}"], "path": ["auth", "forgot-password"] }
+          }
+        },
+        {
+          "name": "Reset Password with OTP",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"customer@example.com\",\n  \"otp\": \"123456\",\n  \"newPassword\": \"NewPassword@123!\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/auth/reset-password", "host": ["{{baseUrl}}"], "path": ["auth", "reset-password"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. Hubs Management (Admin & Public)",
+      "item": [
+        {
+          "name": "Admin: Create Hub",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{adminAccessToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Dhanmondi Central Hub\",\n  \"address\": \"Road 27, Dhanmondi, Dhaka\",\n  \"zone\": \"Dhaka-Central\",\n  \"contactNo\": \"01811000002\",\n  \"latitude\": 23.7461,\n  \"longitude\": 90.3742\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/hubs", "host": ["{{baseUrl}}"], "path": ["hubs"] }
+          }
+        },
+        {
+          "name": "Get All Hubs (Cached with Redis)",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/hubs?page=1&limit=10", "host": ["{{baseUrl}}"], "path": ["hubs"], "query": [{ "key": "page", "value": "1" }, { "key": "limit", "value": "10" }] }
+          }
+        },
+        {
+          "name": "Get Hub By ID",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/hubs/{{hubId}}", "host": ["{{baseUrl}}"], "path": ["hubs", "{{hubId}}"] }
+          }
+        },
+        {
+          "name": "Admin: Update Hub",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{adminAccessToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Dhanmondi Mega Hub\",\n  \"contactNo\": \"01811999999\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/hubs/{{hubId}}", "host": ["{{baseUrl}}"], "path": ["hubs", "{{hubId}}"] }
+          }
+        },
+        {
+          "name": "Admin: Soft Delete Hub",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminAccessToken}}" }],
+            "url": { "raw": "{{baseUrl}}/hubs/{{hubId}}", "host": ["{{baseUrl}}"], "path": ["hubs", "{{hubId}}"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. Shipments",
+      "item": [
+        {
+          "name": "Calculate Shipping Cost",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"originHubId\": \"{{hubId}}\",\n  \"destinationHubId\": \"{{hubId}}\",\n  \"weightKg\": 2.5,\n  \"lengthCm\": 25,\n  \"widthCm\": 15,\n  \"heightCm\": 10,\n  \"isFragile\": true\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/shipments/calculate-price", "host": ["{{baseUrl}}"], "path": ["shipments", "calculate-price"] }
+          }
+        },
+        {
+          "name": "Customer: Book Parcel (Create Shipment)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const json = pm.response.json();",
+                  "if (json.data && json.data.id) {",
+                  "    pm.collectionVariables.set('shipmentId', json.data.id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"originHubId\": \"{{hubId}}\",\n  \"destinationHubId\": \"{{hubId}}\",\n  \"senderName\": \"John Sender\",\n  \"senderPhone\": \"01711000001\",\n  \"senderAddress\": \"Dhanmondi, Dhaka\",\n  \"receiverName\": \"Alice Receiver\",\n  \"receiverPhone\": \"01911000002\",\n  \"receiverAddress\": \"Gulshan 2, Dhaka\",\n  \"weightKg\": 2.0,\n  \"lengthCm\": 20,\n  \"widthCm\": 15,\n  \"heightCm\": 10,\n  \"isFragile\": false,\n  \"deliveryNotes\": \"Handle with care\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/shipments", "host": ["{{baseUrl}}"], "path": ["shipments"] }
+          }
+        },
+        {
+          "name": "Get All Shipments (Role Filtered)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": { "raw": "{{baseUrl}}/shipments?page=1&limit=10", "host": ["{{baseUrl}}"], "path": ["shipments"] }
+          }
+        },
+        {
+          "name": "Get Shipment Details by ID",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": { "raw": "{{baseUrl}}/shipments/{{shipmentId}}", "host": ["{{baseUrl}}"], "path": ["shipments", "{{shipmentId}}"] }
+          }
+        },
+        {
+          "name": "Customer: Update Parcel Details",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"deliveryNotes\": \"Please call before delivery\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/shipments/{{shipmentId}}", "host": ["{{baseUrl}}"], "path": ["shipments", "{{shipmentId}}"] }
+          }
+        },
+        {
+          "name": "Customer: Cancel Parcel",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": { "raw": "{{baseUrl}}/shipments/{{shipmentId}}/cancel", "host": ["{{baseUrl}}"], "path": ["shipments", "{{shipmentId}}", "cancel"] }
+          }
+        },
+        {
+          "name": "Admin: Assign Courier to Shipment",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{adminAccessToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"courierId\": \"your-courier-user-uuid\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/shipments/{{shipmentId}}/assign-courier", "host": ["{{baseUrl}}"], "path": ["shipments", "{{shipmentId}}", "assign-courier"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "4. Courier Workflow & Delivery Lifecycle",
+      "item": [
+        {
+          "name": "Courier: Setup / Update Profile",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{courierAccessToken}}" }],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                { "key": "hubId", "value": "{{hubId}}", "type": "text" },
+                { "key": "vehicleType", "value": "MOTORBIKE", "type": "text" },
+                { "key": "vehicleNumber", "value": "DHK-METRO-HA-1234", "type": "text" },
+                { "key": "currentZone", "value": "Dhaka-Central", "type": "text" }
+              ]
+            },
+            "url": { "raw": "{{baseUrl}}/courier/profile", "host": ["{{baseUrl}}"], "path": ["courier", "profile"] }
+          }
+        },
+        {
+          "name": "Courier: Get My Profile",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{courierAccessToken}}" }],
+            "url": { "raw": "{{baseUrl}}/courier/profile/me", "host": ["{{baseUrl}}"], "path": ["courier", "profile", "me"] }
+          }
+        },
+        {
+          "name": "Courier: Update Status -> PICKED_UP",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{courierAccessToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"PICKED_UP\",\n  \"remarks\": \"Parcel collected from sender\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/shipments/{{shipmentId}}/status", "host": ["{{baseUrl}}"], "path": ["shipments", "{{shipmentId}}", "status"] }
+          }
+        },
+        {
+          "name": "Courier: Update Status -> OUT_FOR_DELIVERY",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{courierAccessToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"OUT_FOR_DELIVERY\",\n  \"remarks\": \"Rider is on the way to recipient address\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/shipments/{{shipmentId}}/status", "host": ["{{baseUrl}}"], "path": ["shipments", "{{shipmentId}}", "status"] }
+          }
+        },
+        {
+          "name": "Courier: Complete Delivery with OTP (DELIVERED)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{courierAccessToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"DELIVERED\",\n  \"deliveryOtp\": \"123456\",\n  \"remarks\": \"Parcel handed to recipient after OTP verification\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/shipments/{{shipmentId}}/status", "host": ["{{baseUrl}}"], "path": ["shipments", "{{shipmentId}}", "status"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "5. Payment (Stripe)",
+      "item": [
+        {
+          "name": "Initiate Stripe Checkout Session",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"shipmentId\": \"{{shipmentId}}\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/payments/initiate", "host": ["{{baseUrl}}"], "path": ["payments", "initiate"] }
+          }
+        },
+        {
+          "name": "Get Payment Details",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/payments/{{shipmentId}}", "host": ["{{baseUrl}}"], "path": ["payments", "{{shipmentId}}"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "6. Error Handling & RBAC Demonstrations (For Video)",
+      "item": [
+        {
+          "name": "Demonstrate 401 Unauthorized (Missing Token)",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/users/me", "host": ["{{baseUrl}}"], "path": ["users", "me"] }
+          }
+        },
+        {
+          "name": "Demonstrate 403 Forbidden (Customer Accessing Admin Hub Creation)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Illegal Hub Creation\",\n  \"address\": \"Test\",\n  \"zone\": \"Dhaka\",\n  \"contactNo\": \"01700000000\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/hubs", "host": ["{{baseUrl}}"], "path": ["hubs"] }
+          }
+        },
+        {
+          "name": "Demonstrate 400 Validation Error (Invalid Email & Missing Password)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"not-a-valid-email\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/auth/login", "host": ["{{baseUrl}}"], "path": ["auth", "login"] }
+          }
+        },
+        {
+          "name": "Demonstrate 404 Route Not Found",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/non-existent-endpoint", "host": ["{{baseUrl}}"], "path": ["non-existent-endpoint"] }
+          }
+        }
+      ]
+    }
+  ]
+}
