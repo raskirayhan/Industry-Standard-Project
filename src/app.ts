@@ -41,6 +41,16 @@ app.get("/", (req: Request, res: Response) => {
   });
 });
 
+// Health check endpoint
+app.get("/api/v1/health", async (req: Request, res: Response) => {
+  res.status(httpStatus.OK).json({
+    success: true,
+    message: "Server is healthy",
+    uptime: process.uptime(),
+    timestamp: new Date().toISOString(),
+  });
+});
+
 // Application API routes
 app.use("/api/v1/auth", authRoutes);
 app.use("/api/v1/users", userRoutes);
