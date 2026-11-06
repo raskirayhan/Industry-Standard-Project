@@ -5,14 +5,14 @@
   "license": "ISC",
   "author": "Raski Rayhan <raskirayhan@gmail.com>",
   "type": "module",
-  "main": "index.js",
+  "main": "api/index.js",
   "scripts": {
     "dev": "tsx watch src/server.ts",
-    "build": "tsc",
+    "build": "prisma generate && esbuild src/server.ts --bundle --platform=node --packages=external --format=esm --outfile=dist/server.js && esbuild api/index.ts --bundle --platform=node --packages=external --format=esm --outfile=api/index.js",
     "postinstall": "prisma generate",
     "seed": "tsx src/scripts/seed.ts",
     "test:logic": "tsx src/scripts/test-api.ts",
-    "vercel-build": "prisma generate && tsc",
+    "vercel-build": "prisma generate && esbuild api/index.ts --bundle --platform=node --packages=external --format=esm --outfile=api/index.js",
     "start": "node dist/server.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -29,6 +29,7 @@
     "@types/node": "^26.0.0",
     "@types/nodemailer": "^8.0.1",
     "@types/pg": "^8.20.0",
+    "esbuild": "^0.28.1",
     "prisma": "^7.8.0",
     "tsx": "^4.22.4",
     "typescript": "^6.0.3"
