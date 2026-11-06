@@ -7,6 +7,7 @@ import { authRoutes } from "./modules/auth/auth.routes";
 import { userRoutes } from "./modules/user/user.routes";
 import { customerRoutes } from "./modules/customer/customer.routes";
 import { globalErrorHandler } from "./middlewares/globalErrorHandler";
+import { notFound } from "./middlewares/notFound";
 import { hubRoutes } from "./modules/hub/hub.routes";
 import { shipmentRoutes } from "./modules/shipment/shipment.route";
 import { paymentController } from "./modules/payment/payment.controller";
@@ -22,10 +23,9 @@ app.use(
   })
 );
 
-
 app.post(
-  ['/api/v1/payments/webhook', '/api/payments/webhook'],
-  express.raw({ type: 'application/json' }),
+  ["/api/v1/payments/webhook", "/api/payments/webhook"],
+  express.raw({ type: "application/json" }),
   paymentController.stripeWebhookHandler
 );
 
@@ -45,19 +45,13 @@ app.get("/", (req: Request, res: Response) => {
 app.use("/api/v1/auth", authRoutes);
 app.use("/api/v1/users", userRoutes);
 app.use("/api/v1/customers", customerRoutes);
-app.use("/api/v1/hubs",hubRoutes);
-app.use("/api/v1/shipments",shipmentRoutes);
-app.use('/api/v1/payments',paymentRoutes);
-app.use('/api/v1/courier',courierRoutes)
+app.use("/api/v1/hubs", hubRoutes);
+app.use("/api/v1/shipments", shipmentRoutes);
+app.use("/api/v1/payments", paymentRoutes);
+app.use("/api/v1/courier", courierRoutes);
 
 // 404 Route Handler
-app.use((req: Request, res: Response) => {
-  res.status(httpStatus.NOT_FOUND).json({
-    success: false,
-    statusCode: httpStatus.NOT_FOUND,
-    message: "API Route Not Found",
-  });
-});
+app.use(notFound);
 
 // Global Error Handler
 app.use(globalErrorHandler);
