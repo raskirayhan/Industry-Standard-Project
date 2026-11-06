@@ -1,5 +1,7 @@
-import Stripe from 'stripe';
-import config from '../config';
+import Stripe from "stripe";
+import config from "../config";
 
-export const stripe = new Stripe(config.stripe_secret_key as string)
+const stripeSecretKey =
+  config.stripe_secret_key || "sk_test_placeholder_for_startup";
 
+export const stripe = new Stripe(stripeSecretKey);
