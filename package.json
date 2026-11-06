@@ -10,6 +10,7 @@
     "dev": "tsx watch src/server.ts",
     "build": "tsc",
     "postinstall": "prisma generate",
+    "seed": "tsx src/scripts/seed.ts",
     "vercel-build": "prisma generate && tsc",
     "start": "node dist/server.js",
     "test": "echo \"Error: no test specified\" && exit 1"
