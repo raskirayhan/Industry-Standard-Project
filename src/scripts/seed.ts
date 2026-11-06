@@ -8,6 +8,8 @@ async function runSeed() {
 
   try {
     const saltRounds = Number(config.bcrypt_salt_rounds) || 10;
+    const adminPassword = config.admin_password || "Admin@123456";
+    const adminPasswordHash = await bcrypt.hash(adminPassword, saltRounds);
     const defaultPasswordHash = await bcrypt.hash("Password@123!", saltRounds);
 
     // 1. Seed Super Admin
@@ -19,7 +21,7 @@ async function runSeed() {
         data: {
           name: config.admin_name || "Super Admin",
           email: adminEmail,
-          password: defaultPasswordHash,
+          password: adminPasswordHash,
           role: Role.ADMIN,
           emailVerified: true,
           status: UserStatus.ACTIVE,
